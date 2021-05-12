@@ -40,7 +40,8 @@ class CommonAdapter(QueueAdapterBase):
         "SLURM": {"submit_cmd": "sbatch", "status_cmd": "squeue"},
         "LoadLeveler": {"submit_cmd": "llsubmit", "status_cmd": "llq"},
         "LoadSharingFacility": {"submit_cmd": "bsub", "status_cmd": "bjobs"},
-        "MOAB": {"submit_cmd": "msub", "status_cmd": "showq"}
+        "MOAB": {"submit_cmd": "msub", "status_cmd": "showq"},
+        "PRIMEHPC": {"submit_cmd": "pjsub", "status_cmd": "pjstat"}
     }
 
     def __init__(self, q_type, q_name=None, template_file=None, timeout=None, **kwargs):
@@ -87,6 +88,9 @@ class CommonAdapter(QueueAdapterBase):
             # information on preceeding lines and both of those  might
             # contain a number in any position.
             re_string = r"(\b\d+\b)"
+        elif self.q_type == "PRIMEHPC":
+            # [INFO] PJM 0000 pjsub Job 13652975 submitted.
+            re_string = r"Job\s+(\d+)\ssubmitted"
         else:
             # PBS: "1234.whatever",
             # SGE: "Your job 44275 ("jobname") has been submitted"
@@ -122,6 +126,8 @@ class CommonAdapter(QueueAdapterBase):
         elif self.q_type == "MOAB":
             status_cmd.extend(['-w', "user={}".format(username)])
             # no queue restriction command known for QUEST supercomputer, i.e., -p option doesn't work
+        elif self.q_type == "PRIMEHPC":
+            pass
         else:
             status_cmd.extend(['-u', username])
 
@@ -157,6 +163,11 @@ class CommonAdapter(QueueAdapterBase):
             return len([l for l in output_str.split('\n') if username in l])
 
         if self.q_type == "MOAB":
+            # want only lines that include username;
+            # this will exclude e.g. header lines
+            return len([l for l in output_str.split('\n') if username in l])
+
+        if self.q_type == "PRIMEHPC":
             # want only lines that include username;
             # this will exclude e.g. header lines
             return len([l for l in output_str.split('\n') if username in l])

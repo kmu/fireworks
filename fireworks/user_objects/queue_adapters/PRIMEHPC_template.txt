@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#PJM -L "rscunit=$${rscunit}"
+#PJM -L "rscgrp=$${rscgrp}"
+#PJM -L "vnode=$${nnodes}"
+#PJM -L "vnode-core=$${ppnode}"
+#PJM -L "elapse=$${walltime}"
+#PJM -j
+#PJM -X
+
+#============ Shell Script ===========
+
+$${pre_rocket}
+cd $${launch_dir}
+$${rocket_launch}
+$${post_rocket}
+
+# CommonAdapter (PRIMEHPC) completed writing Template
