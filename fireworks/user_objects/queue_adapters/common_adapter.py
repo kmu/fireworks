@@ -37,23 +37,21 @@ class CommonAdapter(QueueAdapterBase):
         "LoadLeveler": {"submit_cmd": "llsubmit", "status_cmd": "llq"},
         "LoadSharingFacility": {"submit_cmd": "bsub", "status_cmd": "bjobs"},
         "MOAB": {"submit_cmd": "msub", "status_cmd": "showq"},
-        "PRIMEHPC": {"submit_cmd": "pjsub", "status_cmd": "pjstat"}
+        "PJM": {"submit_cmd": "pjsub", "status_cmd": "pjstat"}
     }
 
     def __init__(self, q_type, q_name=None, template_file=None, timeout=None, **kwargs):
         """
-        Initializes a new QueueAdapter object.
-
-        Args:
-            q_type (str): The type of queue. Right now it should be either PBS,
-                SGE, SLURM, Cobalt or LoadLeveler.
-            q_name (str, optional): A name for the queue. Can be any string.
-            template_file (str, optional): The path to the template file. Leave it as
-                None (the default) to use Fireworks' built-in templates for PBS and SGE,
-                which should work on most queues.
-            timeout (int, optional): The amount of seconds to wait before raising an error when
-                checking the number of jobs in the queue. Default 5 seconds.
-            **kwargs: Series of keyword args for queue parameters.
+        :param q_type: The type of queue. Right now it should be either PBS,
+                       SGE, SLURM, Cobalt, LoadLeveler or PJM (Fujitsu).
+        :param q_name: A name for the queue. Can be any string.
+        :param template_file: The path to the template file. Leave it as
+                              None (the default) to use Fireworks' built-in
+                              templates for PBS and SGE, which should work
+                              on most queues.
+        :param timeout: The amount of seconds to wait before raising an error when
+                        checking the number of jobs in the queue. Default 5 seconds.
+        :param **kwargs: Series of keyword args for queue parameters.
         """
         if q_type not in CommonAdapter.default_q_commands:
             raise ValueError(
@@ -88,7 +86,7 @@ class CommonAdapter(QueueAdapterBase):
             # information on preceding lines and both of those  might
             # contain a number in any position.
             re_string = r"(\b\d+\b)"
-        elif self.q_type == "PRIMEHPC":
+        elif self.q_type == "PJM":
             # [INFO] PJM 0000 pjsub Job 13652975 submitted.
             re_string = r"Job\s+(\d+)\ssubmitted"
         else:
@@ -126,7 +124,7 @@ class CommonAdapter(QueueAdapterBase):
         elif self.q_type == "MOAB":
             status_cmd.extend(["-w", f"user={username}"])
             # no queue restriction command known for QUEST supercomputer, i.e., -p option doesn't work
-        elif self.q_type == "PRIMEHPC":
+        elif self.q_type == "PJM":
             pass
         else:
             status_cmd.extend(["-u", username])
@@ -166,7 +164,7 @@ class CommonAdapter(QueueAdapterBase):
             # this will exclude e.g. header lines
             return len([line for line in output_str.split("\n") if username in line])
 
-        if self.q_type == "PRIMEHPC":
+        if self.q_type == "PJM":
             # want only lines that include username;
             # this will exclude e.g. header lines
             return len([l for l in output_str.split('\n') if username in l])
