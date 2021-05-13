@@ -5,6 +5,7 @@
 #PJM -L "vnode=$${nnodes}"
 #PJM -L "vnode-core=$${ppnode}"
 #PJM -L "elapse=$${walltime}"
+#PJM -N $${job_name}
 #PJM -j
 #PJM -X
 
