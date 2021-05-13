@@ -41,13 +41,13 @@ class CommonAdapter(QueueAdapterBase):
         "LoadLeveler": {"submit_cmd": "llsubmit", "status_cmd": "llq"},
         "LoadSharingFacility": {"submit_cmd": "bsub", "status_cmd": "bjobs"},
         "MOAB": {"submit_cmd": "msub", "status_cmd": "showq"},
-        "PRIMEHPC": {"submit_cmd": "pjsub", "status_cmd": "pjstat"}
+        "PJM": {"submit_cmd": "pjsub", "status_cmd": "pjstat"}
     }
 
     def __init__(self, q_type, q_name=None, template_file=None, timeout=None, **kwargs):
         """
         :param q_type: The type of queue. Right now it should be either PBS,
-                       SGE, SLURM, Cobalt or LoadLeveler.
+                       SGE, SLURM, Cobalt, LoadLeveler or PJM (Fujitsu).
         :param q_name: A name for the queue. Can be any string.
         :param template_file: The path to the template file. Leave it as
                               None (the default) to use Fireworks' built-in
@@ -88,7 +88,7 @@ class CommonAdapter(QueueAdapterBase):
             # information on preceeding lines and both of those  might
             # contain a number in any position.
             re_string = r"(\b\d+\b)"
-        elif self.q_type == "PRIMEHPC":
+        elif self.q_type == "PJM":
             # [INFO] PJM 0000 pjsub Job 13652975 submitted.
             re_string = r"Job\s+(\d+)\ssubmitted"
         else:
@@ -126,7 +126,7 @@ class CommonAdapter(QueueAdapterBase):
         elif self.q_type == "MOAB":
             status_cmd.extend(['-w', "user={}".format(username)])
             # no queue restriction command known for QUEST supercomputer, i.e., -p option doesn't work
-        elif self.q_type == "PRIMEHPC":
+        elif self.q_type == "PJM":
             pass
         else:
             status_cmd.extend(['-u', username])
@@ -167,7 +167,7 @@ class CommonAdapter(QueueAdapterBase):
             # this will exclude e.g. header lines
             return len([l for l in output_str.split('\n') if username in l])
 
-        if self.q_type == "PRIMEHPC":
+        if self.q_type == "PJM":
             # want only lines that include username;
             # this will exclude e.g. header lines
             return len([l for l in output_str.split('\n') if username in l])
