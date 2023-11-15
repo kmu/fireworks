@@ -6,7 +6,6 @@ import os
 import shlex
 import string
 import subprocess
-import threading
 import traceback
 import warnings
 
@@ -57,33 +56,25 @@ class Command:
             (status, output, error)
         """
 
-        def target(**kwargs):
-            try:
-                self.process = subprocess.Popen(self.command, **kwargs)
-                self.output, self.error = self.process.communicate()
-                self.status = self.process.returncode
-
-                # Python3 - need to convert string to bytes
-                if isinstance(self.output, bytes):
-                    self.output = self.output.decode("utf-8")
-                if isinstance(self.error, bytes):
-                    self.error = self.error.decode("utf-8")
-            except Exception:
-                self.error = traceback.format_exc()
-                self.status = -1
-
         # default stdout and stderr
         if "stdout" not in kwargs:
             kwargs["stdout"] = subprocess.PIPE
         if "stderr" not in kwargs:
             kwargs["stderr"] = subprocess.PIPE
-        # thread
-        thread = threading.Thread(target=target, kwargs=kwargs)
-        thread.start()
-        thread.join(timeout)
-        if thread.is_alive():
-            self.process.terminate()
-            thread.join()
+        # no threading
+        try:
+            self.process = subprocess.Popen(self.command, **kwargs)
+            self.output, self.error = self.process.communicate()
+            self.status = self.process.returncode
+
+            # Python3 - need to convert string to bytes
+            if isinstance(self.output, bytes):
+                self.output = self.output.decode("utf-8")
+            if isinstance(self.error, bytes):
+                self.error = self.error.decode("utf-8")
+        except Exception:
+            self.error = traceback.format_exc()
+            self.status = -1
         return self.status, self.output, self.error
 
 
