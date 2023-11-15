@@ -1,6 +1,4 @@
-"""
-This module contains contracts for defining adapters to various queueing systems, e.g. PBS/SLURM/SGE.
-"""
+"""This module contains contracts for defining adapters to various queueing systems, e.g. PBS/SLURM/SGE."""
 
 import abc
 import collections
@@ -8,7 +6,6 @@ import os
 import shlex
 import string
 import subprocess
-import threading
 import traceback
 import warnings
 
@@ -28,7 +25,7 @@ class Command:
     Helper class -  run subprocess commands in a different thread with TIMEOUT option.
     From https://gist.github.com/kirpit/1306188
     Based on jcollado's solution:
-    http://stackoverflow.com/questions/1191374/subprocess-with-timeout/4825933#4825933
+    http://stackoverflow.com/questions/1191374/subprocess-with-timeout/4825933#4825933.
     """
 
     command = None
@@ -59,33 +56,25 @@ class Command:
             (status, output, error)
         """
 
-        def target(**kwargs):
-            try:
-                self.process = subprocess.Popen(self.command, **kwargs)
-                self.output, self.error = self.process.communicate()
-                self.status = self.process.returncode
-
-                # Python3 - need to convert string to bytes
-                if isinstance(self.output, bytes):
-                    self.output = self.output.decode("utf-8")
-                if isinstance(self.error, bytes):
-                    self.error = self.error.decode("utf-8")
-            except Exception:
-                self.error = traceback.format_exc()
-                self.status = -1
-
         # default stdout and stderr
         if "stdout" not in kwargs:
             kwargs["stdout"] = subprocess.PIPE
         if "stderr" not in kwargs:
             kwargs["stderr"] = subprocess.PIPE
-        # thread
-        thread = threading.Thread(target=target, kwargs=kwargs)
-        thread.start()
-        thread.join(timeout)
-        if thread.is_alive():
-            self.process.terminate()
-            thread.join()
+        # no threading
+        try:
+            self.process = subprocess.Popen(self.command, **kwargs)
+            self.output, self.error = self.process.communicate()
+            self.status = self.process.returncode
+
+            # Python3 - need to convert string to bytes
+            if isinstance(self.output, bytes):
+                self.output = self.output.decode("utf-8")
+            if isinstance(self.error, bytes):
+                self.error = self.error.decode("utf-8")
+        except Exception:
+            self.error = traceback.format_exc()
+            self.status = -1
         return self.status, self.output, self.error
 
 
@@ -130,8 +119,8 @@ class QueueAdapterBase(collections.defaultdict, FWSerializable):
             subs_dict = {k: v for k, v in self.items() if v is not None}  # clean null values
 
             # warn user if they specify a key not present in template
-            for subs_key in subs_dict.keys():
-                if subs_key not in template_keys and not subs_key.startswith("_") and not subs_key == "logdir":
+            for subs_key in subs_dict:
+                if subs_key not in template_keys and not subs_key.startswith("_") and subs_key != "logdir":
                     warnings.warn(
                         f"Key {subs_key} has been specified in qadapter but it is not present in template, "
                         f"please check template ({self.template_file}) for supported keys."
@@ -148,7 +137,7 @@ class QueueAdapterBase(collections.defaultdict, FWSerializable):
             # might contain unused parameters as leftover $$
             unclean_template = a.safe_substitute(subs_dict)
 
-            clean_template = filter(lambda l: "$$" not in l, unclean_template.split("\n"))
+            clean_template = filter(lambda line: "$$" not in line, unclean_template.split("\n"))
 
             return "\n".join(clean_template)
 
@@ -187,8 +176,7 @@ class QueueAdapterBase(collections.defaultdict, FWSerializable):
     def get_qlogger(self, name):
         if "logdir" in self:
             return get_fw_logger(name, self["logdir"])
-        else:
-            return get_fw_logger(name, stream_level="CRITICAL")
+        return get_fw_logger(name, stream_level="CRITICAL")
 
 
 class QScriptTemplate(string.Template):

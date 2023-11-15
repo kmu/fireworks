@@ -1,10 +1,8 @@
-"""
-A runnable script to launch Job Packing (Multiple) Rockets
-"""
+"""A runnable script to launch Job Packing (Multiple) Rockets."""
 
 import os
-import sys
 from argparse import ArgumentParser
+from importlib import metadata
 from typing import Optional, Sequence
 
 from fireworks.core.fworker import FWorker
@@ -14,11 +12,6 @@ from fireworks.fw_config import CONFIG_FILE_DIR, FWORKER_LOC, LAUNCHPAD_LOC
 
 from ._helpers import _validate_config_file_paths
 
-if sys.version_info < (3, 8):
-    import importlib_metadata as metadata
-else:
-    from importlib import metadata
-
 __author__ = "Xiaohui Qu, Anubhav Jain"
 __copyright__ = "Copyright 2013, The Materials Project & Electrolyte Genome Project"
 __maintainer__ = "Xiaohui Qu"
@@ -27,7 +20,6 @@ __date__ = "Aug 19, 2013"
 
 
 def mlaunch(argv: Optional[Sequence[str]] = None) -> int:
-
     m_description = "This program launches multiple Rockets simultaneously"
 
     parser = ArgumentParser("mlaunch", description=m_description)
@@ -93,10 +85,7 @@ def mlaunch(argv: Optional[Sequence[str]] = None) -> int:
 
     launchpad = LaunchPad.from_file(args.launchpad_file) if args.launchpad_file else LaunchPad(strm_lvl=args.loglvl)
 
-    if args.fworker_file:
-        fworker = FWorker.from_file(args.fworker_file)
-    else:
-        fworker = FWorker()
+    fworker = FWorker.from_file(args.fworker_file) if args.fworker_file else FWorker()
 
     total_node_list = None
     if args.nodefile:

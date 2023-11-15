@@ -1,8 +1,5 @@
-"""
-A runnable script for launching rockets (a command-line interface to queue_launcher.py)
-"""
+"""A runnable script for launching rockets (a command-line interface to queue_launcher.py)."""
 import os
-import sys
 import time
 from argparse import ArgumentParser
 from typing import Optional, Sequence
@@ -17,23 +14,15 @@ except ImportError:
 else:
     HAS_FABRIC = True
 
+from importlib import metadata
+
 from fireworks.core.fworker import FWorker
 from fireworks.core.launchpad import LaunchPad
-from fireworks.fw_config import (
-    CONFIG_FILE_DIR,
-    FWORKER_LOC,
-    LAUNCHPAD_LOC,
-    QUEUEADAPTER_LOC,
-)
+from fireworks.fw_config import CONFIG_FILE_DIR, FWORKER_LOC, LAUNCHPAD_LOC, QUEUEADAPTER_LOC
 from fireworks.queue.queue_launcher import launch_rocket_to_queue, rapidfire
 from fireworks.utilities.fw_serializers import load_object_from_file
 
 from ._helpers import _validate_config_file_paths
-
-if sys.version_info < (3, 8):
-    import importlib_metadata as metadata
-else:
-    from importlib import metadata
 
 __authors__ = "Anubhav Jain, Shyue Ping Ong"
 __copyright__ = "Copyright 2013, The Materials Project"
@@ -43,7 +32,6 @@ __date__ = "Jan 14, 2013"
 
 
 def do_launch(args):
-
     cfg_files_to_check = [
         ("launchpad", "-l", False, LAUNCHPAD_LOC),
         ("fworker", "-w", False, FWORKER_LOC),

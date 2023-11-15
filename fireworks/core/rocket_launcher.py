@@ -1,20 +1,15 @@
-"""
-This module contains methods for launching Rockets, both singly and in rapid-fire mode.
-"""
+"""This module contains methods for launching Rockets, both singly and in rapid-fire mode."""
 
 import os
 import time
 from datetime import datetime
+from typing import Optional
 
 from fireworks.core.fworker import FWorker
+from fireworks.core.launchpad import LaunchPad
 from fireworks.core.rocket import Rocket
 from fireworks.fw_config import FWORKER_LOC, RAPIDFIRE_SLEEP_SECS
-from fireworks.utilities.fw_utilities import (
-    create_datestamp_dir,
-    get_fw_logger,
-    log_multi,
-    redirect_local,
-)
+from fireworks.utilities.fw_utilities import create_datestamp_dir, get_fw_logger, log_multi, redirect_local
 
 __author__ = "Anubhav Jain"
 __copyright__ = "Copyright 2013, The Materials Project"
@@ -42,8 +37,7 @@ def launch_rocket(launchpad, fworker=None, fw_id=None, strm_lvl="INFO", pdb_on_e
         fworker (FWorker)
         fw_id (int): if set, a particular Firework to run
         strm_lvl (str): level at which to output logs to stdout
-        pdb_on_exception (bool): if set to True, python will start
-            the debugger on a firework exception
+        pdb_on_exception (bool): if True, Python will start the debugger on a firework exception
 
     Returns:
         bool
@@ -60,16 +54,16 @@ def launch_rocket(launchpad, fworker=None, fw_id=None, strm_lvl="INFO", pdb_on_e
 
 
 def rapidfire(
-    launchpad,
-    fworker=None,
-    m_dir=None,
-    nlaunches=0,
-    max_loops=-1,
-    sleep_time=None,
-    strm_lvl="INFO",
-    timeout=None,
-    local_redirect=False,
-    pdb_on_exception=False,
+    launchpad: LaunchPad,
+    fworker: FWorker = None,
+    m_dir: Optional[str] = None,
+    nlaunches: int = 0,
+    max_loops: int = -1,
+    sleep_time: Optional[int] = None,
+    strm_lvl: str = "INFO",
+    timeout: Optional[int] = None,
+    local_redirect: bool = False,
+    pdb_on_exception: bool = False,
 ):
     """
     Keeps running Rockets in m_dir until we reach an error. Automatically creates subdirectories
@@ -85,8 +79,8 @@ def rapidfire(
         strm_lvl (str): level at which to output logs to stdout
         timeout (int): of seconds after which to stop the rapidfire process
         local_redirect (bool): redirect standard input and output to local file
+        pdb_on_exception (bool): if True, python will start the debugger on a firework exception
     """
-
     sleep_time = sleep_time if sleep_time else RAPIDFIRE_SLEEP_SECS
     curdir = m_dir if m_dir else os.getcwd()
     l_logger = get_fw_logger("rocket.launcher", l_dir=launchpad.get_logdir(), stream_level=strm_lvl)

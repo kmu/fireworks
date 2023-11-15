@@ -12,11 +12,7 @@
 
 import os
 import sys
-
-if sys.version_info < (3, 8):
-    import importlib_metadata as metadata
-else:
-    from importlib import metadata
+from importlib import metadata
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -303,6 +299,7 @@ epub_copyright = "2013, Anubhav Jain"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"http://docs.python.org/": None}
+
 
 # AJ: a hack found online to get __init__ to show up in docs
 def skip(app, what, name, obj, skip, options):

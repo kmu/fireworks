@@ -1,11 +1,10 @@
-"""
-A runnable script to launch a single Rocket (a command-line interface to rocket_launcher.py)
-"""
+"""A runnable script to launch a single Rocket (a command-line interface to rocket_launcher.py)."""
 
 import os
 import signal
 import sys
 from argparse import ArgumentParser
+from importlib import metadata
 from typing import Optional, Sequence
 
 from fireworks.core.fworker import FWorker
@@ -16,11 +15,6 @@ from fireworks.fw_config import CONFIG_FILE_DIR, FWORKER_LOC, LAUNCHPAD_LOC
 from fireworks.utilities.fw_utilities import get_fw_logger, get_my_host, get_my_ip
 
 from ._helpers import _validate_config_file_paths
-
-if sys.version_info < (3, 8):
-    import importlib_metadata as metadata
-else:
-    from importlib import metadata
 
 __author__ = "Anubhav Jain"
 __credits__ = "Xiaohui Qu, Shyam Dwaraknath"
@@ -59,7 +53,7 @@ def rlaunch(argv: Optional[Sequence[str]] = None) -> int:
     single_parser.add_argument("--pdb", help="shortcut to invoke debugger on error", action="store_true")
 
     rapid_parser.add_argument(
-        "--nlaunches", help='num_launches (int or "infinite"; ' "default 0 is all jobs in DB)", default=0
+        "--nlaunches", help='num_launches (int or "infinite"; default 0 is all jobs in DB)', default=0
     )
     rapid_parser.add_argument(
         "--timeout", help="timeout (secs) after which to quit (default None)", default=None, type=int
@@ -145,10 +139,7 @@ def rlaunch(argv: Optional[Sequence[str]] = None) -> int:
     else:
         launchpad = LaunchPad.from_file(args.launchpad_file) if args.launchpad_file else LaunchPad(strm_lvl=args.loglvl)
 
-    if args.fworker_file:
-        fworker = FWorker.from_file(args.fworker_file)
-    else:
-        fworker = FWorker()
+    fworker = FWorker.from_file(args.fworker_file) if args.fworker_file else FWorker()
 
     # prime addr lookups
     _log = get_fw_logger("rlaunch", stream_level="INFO")
